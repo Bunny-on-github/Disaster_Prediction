@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disaster Prediction</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background-color: #f0f8ff; }
+        h1 { color: #333; }
+        form { max-width: 500px; padding: 20px; background-color: #fff; border-radius: 8px; }
+        input[type="number"] { width: 100%; padding: 8px; margin: 5px 0 15px; border-radius: 5px; border: 1px solid #ccc; }
+        input[type="submit"] { padding: 10px 15px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; font-size: 18px; color: green; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Natural Disaster Prediction</h1>
+    <form method="POST">
+        <label>Latitude:</label>
+        <input type="number" step="any" name="latitude" required>
+
+        <label>Longitude:</label>
+        <input type="number" step="any" name="longitude" required>
+
+        <label>Avg Temperature (°C):</label>
+        <input type="number" step="any" name="avg_temperature" required>
+
+        <label>Rainfall (mm):</label>
+        <input type="number" step="any" name="rainfall_mm" required>
+
+        <label>Humidity (%):</label>
+        <input type="number" step="any" name="humidity_percent" required>
+
+        <label>Wind Speed (kmph):</label>
+        <input type="number" step="any" name="wind_speed_kmph" required>
+
+        <label>Atmospheric Pressure (hPa):</label>
+        <input type="number" step="any" name="atmospheric_pressure_hpa" required>
+
+        <label>Soil Moisture (%):</label>
+        <input type="number" step="any" name="soil_moisture_percent" required>
+
+        <label>Seismic Activity (Richter):</label>
+        <input type="number" step="any" name="seismic_activity_richter" required>
+
+        <label>Elevation (meters):</label>
+        <input type="number" step="any" name="elevation_meters" required>
+
+        <label>Month (1-12):</label>
+        <input type="number" name="month" min="1" max="12" required>
+
+        <input type="submit" value="Predict Disaster">
+    </form>
+
+    {% if prediction %}
+    <div class="result">{{ prediction }}</div>
+    {% endif %}
+</body>
+</html>
