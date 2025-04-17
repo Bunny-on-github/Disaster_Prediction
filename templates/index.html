@@ -5,273 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disaster Prediction</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <style>
-        .chart-container {
-            width: 100%;
-            max-width: 900px;
-            margin: 30px auto;
-            position: relative;
-        }
-    
-        canvas {
-            width: 100% !important;
-            height: auto !important;
-        }
-    </style>
-    
-    <h1>Natural Disaster Prediction System</h1>
+<body class="bg-gray-100 text-gray-800">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Natural Disaster Prediction System</h1>
 
-    <form method="POST">
-        <label for="city">City:</label>
-        <input type="text" id="city" name="city" required>
+        <form method="POST" class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="city" class="block font-semibold mb-1">City:</label>
+                    <input type="text" id="city" name="city" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="country" class="block font-semibold mb-1">Country:</label>
+                    <input type="text" id="country" name="country" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
 
-        <label for="country">Country:</label>
-        <input type="text" id="country" name="country" required>
+            <div class="mt-4 text-center">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">Predict</button>
+            </div>
+        </form>
 
-        <!-- <label for="disaster">Disaster Type:</label>
-        <select name="disaster" id="disaster">
-            <option value="flood">Flood</option>
-            <option value="earthquake">Earthquake</option>
-            <option value="cyclone">Cyclone</option>
-            <option value="drought">Drought</option>
-        </select> -->
+        {% if error %}
+            <p class="text-red-600 text-center mb-4">{{ error }}</p>
+        {% endif %}
 
-        <button type="submit">Predict</button>
-    </form>
+        {% if weather %}
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 text-blue-600">Weather Information</h2>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>Temperature: {{ weather.temperature }}°C</li>
+                    <li>Humidity: {{ weather.humidity }}%</li>
+                    <li>Wind Speed: {{ weather.wind_speed }} km/h</li>
+                    <li>Rainfall: {{ weather.rainfall }} mm</li>
+                    <li>Pressure: {{ weather.pressure }} hPa</li>
+                </ul>
+            </div>
+        {% endif %}
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+        {% if prediction %}
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-2 text-green-600">Predicted Disaster Type</h2>
+                <p class="text-lg font-medium">{{ prediction }}</p>
+            </div>
+        {% endif %}
 
-    {% if weather %}
-        <h2>Weather Information</h2>
-        <ul>
-            <li>Temperature: {{ weather.temperature }}°C</li>
-            <li>Humidity: {{ weather.humidity }}%</li>
-            <li>Wind Speed: {{ weather.wind_speed }} km/h</li>
-            <li>Rainfall: {{ weather.rainfall }} mm</li>
-            <li>Pressure: {{ weather.pressure }} hPa</li>
-        </ul>
-    {% endif %}
-
-    {% if prediction %}
-        <h2>Predicted Disaster Type</h2>
-        <p><strong>{{ prediction }}</strong></p>
-    {% endif %}
-
-
-
-    <div class="chart-container">
-        {% if input_data %}
-            <h2>Model Input Visualization</h2>
-            <canvas id="inputDataChart"></canvas>
-            <script>
-                const rawInputData = {{ input_data | tojson | safe }};
-                const labels = [
-                    'Latitude', 'Longitude', 'Avg Temp', 'Rainfall',
-                    'Humidity', 'Wind Speed', 'Pressure', 'Soil Moisture',
-                    'Seismic Activity', 'Elevation', 'Month'
-                ];
-            
-                // Define realistic min and max values for scaling
-                const featureRanges = [
-                    [-90, 90],          // Latitude
-                    [-180, 180],        // Longitude
-                    [-30, 50],          // Avg Temp (°C)
-                    [0, 500],           // Rainfall (mm)
-                    [0, 100],           // Humidity (%)
-                    [0, 150],           // Wind Speed (km/h)
-                    [950, 1050],        // Pressure (hPa)
-                    [0, 100],           // Soil Moisture (%)
-                    [0, 10],            // Seismic Activity (Richter)
-                    [0, 8848],          // Elevation (m) – Mt. Everest max
-                    [1, 12]             // Month
-                ];
-            
-                // Normalize values to 0-100 range
-                const normalizedData = rawInputData.map((value, i) => {
-                    const [min, max] = featureRanges[i];
-                    return ((value - min) / (max - min)) * 100;
-                });
-            
-                const ctx = document.getElementById('inputDataChart').getContext('2d');
-                const inputDataChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Input Features (scaled %)',
-                            data: normalizedData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            originalData: rawInputData // store original data for tooltip
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Normalized (0–100%)'
-                                }
-                            }
+        <div class="chart-container bg-white shadow-md rounded-lg p-6 mb-6">
+            {% if input_data %}
+                <h2 class="text-xl font-semibold mb-4 text-purple-600">Model Input Visualization</h2>
+                <canvas id="inputDataChart"></canvas>
+                <script>
+                    const rawInputData = {{ input_data | tojson | safe }};
+                    const labels = [
+                        'Latitude', 'Longitude', 'Avg Temp', 'Rainfall',
+                        'Humidity', 'Wind Speed', 'Pressure', 'Soil Moisture',
+                        'Seismic Activity', 'Elevation', 'Month'
+                    ];
+                    const featureRanges = [
+                        [-90, 90], [-180, 180], [-30, 50], [0, 500],
+                        [0, 100], [0, 150], [950, 1050], [0, 100],
+                        [0, 10], [0, 8848], [1, 12]
+                    ];
+                    const normalizedData = rawInputData.map((value, i) => {
+                        const [min, max] = featureRanges[i];
+                        return ((value - min) / (max - min)) * 100;
+                    });
+                    const ctx = document.getElementById('inputDataChart').getContext('2d');
+                    const inputDataChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Input Features (scaled %)',
+                                data: normalizedData,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                originalData: rawInputData
+                            }]
                         },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const originalVal = context.dataset.originalData[context.dataIndex];
-                                        return `${context.label}: ${originalVal}`;
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Normalized (0–100%)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const originalVal = context.dataset.originalData[context.dataIndex];
+                                            return `${context.label}: ${originalVal}`;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
-            </script>
-            
-        {% endif %}    
-    </div>
-    
-    <div class="chart-container">
-        {% if probabilities %}
-            <h2>Disaster Type Probabilities</h2>
-            <!-- <pre>{{ probabilities }}</pre> -->
-            <canvas id="probabilitiesChart"></canvas>
-            <script>
-                const probData = {{ probabilities | tojson | safe }};
-                const probLabels = Object.keys(probData);
-                const probValues = Object.values(probData);
-            
-                const ctx2 = document.getElementById('probabilitiesChart').getContext('2d');
-                const probabilitiesChart = new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: probLabels,
-                        datasets: [{
-                            label: 'Disaster Probabilities',
-                            data: probValues,
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 1,
-                                title: {
-                                    display: true,
-                                    text: 'Probability'
-                                }
-                            }
-                        }
-                    }
-                });
-            </script>        
-        {% endif %}
-    </div>
+                    });
+                </script>
+            {% endif %}
+        </div>
 
-    <script>
-        // Save original chart config
-        let inputDataChart;
-        let probabilitiesChart;
-    
-        function drawInputChart() {
-            const rawInputData = {{ input_data | tojson | safe }};
-            const labels = [...]; // same as before
-            const featureRanges = [...]; // same as before
-    
-            const normalizedData = rawInputData.map((value, i) => {
-                const [min, max] = featureRanges[i];
-                return ((value - min) / (max - min)) * 100;
-            });
-    
-            const ctx = document.getElementById('inputDataChart').getContext('2d');
-            if (inputDataChart) inputDataChart.destroy();
-            inputDataChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Input Features (scaled %)',
-                        data: normalizedData,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1,
-                        originalData: rawInputData
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.dataset.originalData[context.dataIndex]}`;
+        <div class="chart-container bg-white shadow-md rounded-lg p-6">
+            {% if probabilities %}
+                <h2 class="text-xl font-semibold mb-4 text-red-600">Disaster Type Probabilities</h2>
+                <canvas id="probabilitiesChart"></canvas>
+                <script>
+                    const probData = {{ probabilities | tojson | safe }};
+                    const probLabels = Object.keys(probData);
+                    const probValues = Object.values(probData);
+                    const ctx2 = document.getElementById('probabilitiesChart').getContext('2d');
+                    const probabilitiesChart = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: probLabels,
+                            datasets: [{
+                                label: 'Disaster Probabilities',
+                                data: probValues,
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1,
+                                    title: {
+                                        display: true,
+                                        text: 'Probability'
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
-        }
-    
-        function drawProbChart() {
-            const probData = {{ probabilities | tojson | safe }};
-            const ctx2 = document.getElementById('probabilitiesChart').getContext('2d');
-            if (probabilitiesChart) probabilitiesChart.destroy();
-            probabilitiesChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(probData),
-                    datasets: [{
-                        label: 'Disaster Probabilities',
-                        data: Object.values(probData),
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 1
-                        }
-                    }
-                }
-            });
-        }
-    
-        window.addEventListener('load', () => {
-            drawInputChart();
-            drawProbChart();
-        });
-    
-        // Optional: re-render on resize (Chart.js usually handles this well)
-        // window.addEventListener('resize', () => {
-        //     drawInputChart();
-        //     drawProbChart();
-        // });
-    </script>
-    
-    </body>
+                    });
+                </script>
+            {% endif %}
+        </div>
+    </div>
+</body>
 </html>
