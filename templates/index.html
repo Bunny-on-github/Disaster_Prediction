@@ -1,157 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disaster Prediction</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disaster Prediction</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Custom Animations */
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-slide {
+      animation: fadeSlideIn 0.6s ease-out forwards;
+    }
+
+    .animate-delay-1 {
+      animation-delay: 0.2s;
+    }
+    .animate-delay-2 {
+      animation-delay: 0.4s;
+    }
+    .animate-delay-3 {
+      animation-delay: 0.6s;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-    <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Natural Disaster Prediction System</h1>
+  <div class="max-w-4xl mx-auto p-6">
 
-        <form method="POST" class="bg-white shadow-md rounded-lg p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="city" class="block font-semibold mb-1">City:</label>
-                    <input type="text" id="city" name="city" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="country" class="block font-semibold mb-1">Country:</label>
-                    <input type="text" id="country" name="country" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
+    <h1 class="text-3xl font-bold text-center mb-8 text-blue-700 animate-fade-slide">Natural Disaster Prediction System</h1>
 
-            <div class="mt-4 text-center">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">Predict</button>
-            </div>
-        </form>
-
-        {% if error %}
-            <p class="text-red-600 text-center mb-4">{{ error }}</p>
-        {% endif %}
-
-        {% if weather %}
-            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 class="text-2xl font-semibold mb-4 text-blue-600">Weather Information</h2>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>Temperature: {{ weather.temperature }}°C</li>
-                    <li>Humidity: {{ weather.humidity }}%</li>
-                    <li>Wind Speed: {{ weather.wind_speed }} km/h</li>
-                    <li>Rainfall: {{ weather.rainfall }} mm</li>
-                    <li>Pressure: {{ weather.pressure }} hPa</li>
-                </ul>
-            </div>
-        {% endif %}
-
-        {% if prediction %}
-            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 class="text-2xl font-semibold mb-2 text-green-600">Predicted Disaster Type</h2>
-                <p class="text-lg font-medium">{{ prediction }}</p>
-            </div>
-        {% endif %}
-
-        <div class="chart-container bg-white shadow-md rounded-lg p-6 mb-6">
-            {% if input_data %}
-                <h2 class="text-xl font-semibold mb-4 text-purple-600">Model Input Visualization</h2>
-                <canvas id="inputDataChart"></canvas>
-                <script>
-                    const rawInputData = {{ input_data | tojson | safe }};
-                    const labels = [
-                        'Latitude', 'Longitude', 'Avg Temp', 'Rainfall',
-                        'Humidity', 'Wind Speed', 'Pressure', 'Soil Moisture',
-                        'Seismic Activity', 'Elevation', 'Month'
-                    ];
-                    const featureRanges = [
-                        [-90, 90], [-180, 180], [-30, 50], [0, 500],
-                        [0, 100], [0, 150], [950, 1050], [0, 100],
-                        [0, 10], [0, 8848], [1, 12]
-                    ];
-                    const normalizedData = rawInputData.map((value, i) => {
-                        const [min, max] = featureRanges[i];
-                        return ((value - min) / (max - min)) * 100;
-                    });
-                    const ctx = document.getElementById('inputDataChart').getContext('2d');
-                    const inputDataChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Input Features (scaled %)',
-                                data: normalizedData,
-                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                originalData: rawInputData
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    title: {
-                                        display: true,
-                                        text: 'Normalized (0–100%)'
-                                    }
-                                }
-                            },
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            const originalVal = context.dataset.originalData[context.dataIndex];
-                                            return `${context.label}: ${originalVal}`;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                </script>
-            {% endif %}
+    <form method="POST" class="bg-white shadow-md rounded-lg p-6 mb-8 animate-fade-slide animate-delay-1">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="city" class="block font-semibold mb-1">City:</label>
+          <input type="text" id="city" name="city" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
         </div>
-
-        <div class="chart-container bg-white shadow-md rounded-lg p-6">
-            {% if probabilities %}
-                <h2 class="text-xl font-semibold mb-4 text-red-600">Disaster Type Probabilities</h2>
-                <canvas id="probabilitiesChart"></canvas>
-                <script>
-                    const probData = {{ probabilities | tojson | safe }};
-                    const probLabels = Object.keys(probData);
-                    const probValues = Object.values(probData);
-                    const ctx2 = document.getElementById('probabilitiesChart').getContext('2d');
-                    const probabilitiesChart = new Chart(ctx2, {
-                        type: 'bar',
-                        data: {
-                            labels: probLabels,
-                            datasets: [{
-                                label: 'Disaster Probabilities',
-                                data: probValues,
-                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                borderColor: 'rgba(255, 99, 132, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 1,
-                                    title: {
-                                        display: true,
-                                        text: 'Probability'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                </script>
-            {% endif %}
+        <div>
+          <label for="country" class="block font-semibold mb-1">Country:</label>
+          <input type="text" id="country" name="country" required class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
         </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold py-2 px-6 rounded transition-all duration-200">Predict</button>
+      </div>
+    </form>
+
+    {% if error %}
+      <p class="text-red-600 text-center mb-4 animate-fade-slide">{{ error }}</p>
+    {% endif %}
+
+    {% if weather %}
+      <div class="bg-white shadow-md rounded-lg p-6 mb-6 animate-fade-slide animate-delay-2">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-600">Weather Information</h2>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Temperature: {{ weather.temperature }}°C</li>
+          <li>Humidity: {{ weather.humidity }}%</li>
+          <li>Wind Speed: {{ weather.wind_speed }} km/h</li>
+          <li>Rainfall: {{ weather.rainfall }} mm</li>
+          <li>Pressure: {{ weather.pressure }} hPa</li>
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if prediction %}
+      <div class="bg-white shadow-md rounded-lg p-6 mb-6 animate-fade-slide animate-delay-2">
+        <h2 class="text-2xl font-semibold mb-2 text-green-600">Predicted Disaster Type</h2>
+        <p class="text-lg font-medium">{{ prediction }}</p>
+      </div>
+    {% endif %}
+
+    <div class="chart-container bg-white shadow-md rounded-lg p-6 mb-6 animate-fade-slide animate-delay-3">
+      {% if input_data %}
+        <h2 class="text-xl font-semibold mb-4 text-purple-600">Model Input Visualization</h2>
+        <canvas id="inputDataChart" class="opacity-0 animate-fade-slide"></canvas>
+        <script>
+          const rawInputData = {{ input_data | tojson | safe }};
+          const labels = [
+            'Latitude', 'Longitude', 'Avg Temp', 'Rainfall',
+            'Humidity', 'Wind Speed', 'Pressure', 'Soil Moisture',
+            'Seismic Activity', 'Elevation', 'Month'
+          ];
+          const featureRanges = [
+            [-90, 90], [-180, 180], [-30, 50], [0, 500],
+            [0, 100], [0, 150], [950, 1050], [0, 100],
+            [0, 10], [0, 8848], [1, 12]
+          ];
+          const normalizedData = rawInputData.map((value, i) => {
+            const [min, max] = featureRanges[i];
+            return ((value - min) / (max - min)) * 100;
+          });
+          const ctx = document.getElementById('inputDataChart').getContext('2d');
+          const inputDataChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Input Features (scaled %)',
+                data: normalizedData,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                originalData: rawInputData
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  title: {
+                    display: true,
+                    text: 'Normalized (0–100%)'
+                  }
+                }
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      const originalVal = context.dataset.originalData[context.dataIndex];
+                      return `${context.label}: ${originalVal}`;
+                    }
+                  }
+                }
+              }
+            }
+          });
+        </script>
+      {% endif %}
     </div>
+
+    <div class="chart-container bg-white shadow-md rounded-lg p-6 animate-fade-slide animate-delay-3">
+      {% if probabilities %}
+        <h2 class="text-xl font-semibold mb-4 text-red-600">Disaster Type Probabilities</h2>
+        <canvas id="probabilitiesChart" class="opacity-0 animate-fade-slide"></canvas>
+        <script>
+          const probData = {{ probabilities | tojson | safe }};
+          const probLabels = Object.keys(probData);
+          const probValues = Object.values(probData);
+          const ctx2 = document.getElementById('probabilitiesChart').getContext('2d');
+          const probabilitiesChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+              labels: probLabels,
+              datasets: [{
+                label: 'Disaster Probabilities',
+                data: probValues,
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 1,
+                  title: {
+                    display: true,
+                    text: 'Probability'
+                  }
+                }
+              }
+            }
+          });
+        </script>
+      {% endif %}
+    </div>
+  </div>
 </body>
 </html>
